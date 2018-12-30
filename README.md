@@ -6,4 +6,4 @@ Desweiten kann du reine style vorgaben für Events anpassen. oder auch Zeit date
 
 In der Date.php ist beschrieben wie man die Klasse betanken muss.
 Der kalender wird dann mittels Javascript dann in das Haupt Div Geleitet und dann auch da Dargestellt
-(https://pbs.twimg.com/media/DvqsX6dW0AUc0b8.jpg:large)
+(https://pbs.twimg.com/media/DvqsX6dW0AUc0b8.jpg)

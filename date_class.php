@@ -16,9 +16,13 @@ class calender_create {
     
     #public $data_komplete = array(); 
     
+    private $date_id_arr = array(); # for filter Trash data
+    
     private $end_begin;
     
     private $loop_values = 0;
+    
+    public $hover = 0; #hover funktion
     
     public function start_date ($month,$year){### insert Month / Year
         
@@ -53,10 +57,28 @@ class calender_create {
         
     }
     
-    public function data_insert($id,$Style,$value){ # data insert, ID, CSS style, Value 
+    public function basic_insert($id,$Style){ # data insert, ID, CSS style, Value 
         
         $this->data[$id]['style'] = $Style;  
-        $this->data[$id]['value'] = $value; 
+        
+        
+        
+    }
+    
+    public function hover_insert($Style,$mouse){ # data insert, ID, CSS style, Value 
+        
+        $this->data['hover']['style'] = $Style;  
+        $this->data['hover']['value'] = $mouse;
+        $this->hover = array();
+        
+    }
+    
+    
+    public function data_insert($id,$Style,$value,$onoff){ # data insert, ID, CSS style, Value 
+        
+        $this->data[$id]['style'] = $Style;  
+        $this->data[$id]['value'] = $value;
+        $this->data[$id]['onoff'] = $onoff;
         
     }
     
@@ -107,8 +129,7 @@ class calender_create {
     #This Data will be Used in the JS script. 
         
         //$data_komplete = "aa";
-        $loop = array('table','day','overlap'); #Show Entrys he will be ever seen 
-        
+        $loop = array('table','day','overlap'); #Show Entrys he will be ever seen
         
         if ($this->month_show != 0){ #add Class Year in array ... when the Array is autmatic befillt, die JS is Crashing. entry in document not found
            array_push($loop, 'year');
@@ -131,29 +152,60 @@ class calender_create {
                 unset ($this->data['week']);
             } 
         }
-        
+
         foreach ($loop as $id){# filling Table data and Class data First
             
             if (is_array($this->data[$id])){
                 
                 $t1[$this->loop_values]['id'] = $id;
-                $t1[$this->loop_values]['value'] = $this->data[$id]['value'];
+                $t1[$this->loop_values]['value'] = '';
                 $t1[$this->loop_values]['style'] = $this->data[$id]['style'];
+                //print_r($id);
+                //print_r($this->data[$id]);
                 unset ($this->data[$id]);
                 $this->loop_values++;
             }
-            #print $id;
+            
             
         }
         
-        while (list($id, $value) = each($this->data)) { #Filling Data with User Data
-
-            $t1[$this->loop_values]['id'] = $id;
-            $t1[$this->loop_values]['value'] = $this->data[$id]['value'];
-            $t1[$this->loop_values]['style'] = $this->data[$id]['style'];
-
+        if (is_array($this->data['hover'])){ #add hoverfunktion 
             
-            $this->loop_values++;
+                
+                $this->hover['id'] = 'hover';
+                $this->hover['value'] = $this->data['hover']['value'];
+                $this->hover['style'] = $this->data['hover']['style'];
+                //print_r($this->hover);
+                unset ($this->data['hover']);
+                
+        }else{
+            $this->hover = 0; #set hover off in JS
+        }
+        
+        
+        while (list($id, $value) = each($this->data)) { #Filling Data with User Data (using the Rest from $this->data)
+			
+			if (array_key_exists($id, $this->date_id_arr)) { #sorting Irritating Data
+
+	            $t1[$this->loop_values]['id'] = $id;
+	            
+	            $t1[$this->loop_values]['style'] = $this->data[$id]['style'];
+	            //$t1[$this->loop_values]['onoff'] = $this->data[$id]['onoff'];
+	           if ($this->data[$id]['value'] != ''){
+                    
+                    if ($this->data[$id]['onoff'] == 1){
+                       $t1[$this->loop_values]['value'] = $this->data[$id]['value'].'..;..1'; 
+                    }else{
+                        $t1[$this->loop_values]['value'] = $this->data[$id]['value'].'..;..0';
+                    }
+                    
+                    
+                }else{
+                    $t1[$this->loop_values]['value'] = ''.'..;..0'; 
+                }
+	
+	            $this->loop_values++;
+			}
         
         }
 
@@ -184,8 +236,17 @@ class calender_create {
                     }   
                     
                 }
-                $return .= "<td class='day' id='d".$month_array[$day]['day'].date('n',$date_new)."'>".$month_array[$day]['day']."</td>"; ## Inserrt Herve your Div/id oder Different, The d on the Begin stand for Day ... CSS needs a Char to the begin
+                $day_calc = "d".$month_array[$day]['day'].date('n',$date_new);
                 
+                if ($this->hover != 0){ #adding hover span
+                    $hover_span = "<span class='tttt' id='".$day_calc."span'>".$month_array[$day]['day']."</span>";
+                }
+         
+                $return .= "<td class='day' id='".$day_calc."'>".$month_array[$day]['day']." ".$hover_span."</td>"; ## Inserrt Herve your Div/id oder Different, The d on the Begin stand for Day ... CSS needs a Char to the begin
+                    
+                
+                
+                $this->date_id_arr[$day_calc] = 1; 
                 
                 if ($month_array[$day]['wd'] == 7){ #now is sundy, Close column
                     $return .= "</tr>";
@@ -237,6 +298,8 @@ class calender_create {
             $end_return['Kalender'] = $complete;
             
             $end_return['value'] = $this->inhalt();
+            
+            $end_return['hover'] = $this->hover;
             
             return ($end_return);
             
